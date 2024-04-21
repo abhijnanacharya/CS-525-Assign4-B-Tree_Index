@@ -386,3 +386,597 @@ RC openBtree(BTreeHandle **tree, char *idxId)
 
 9. **Return**:
    - Return `RC_OK` to indicate successful execution of the function.
+  
+
+---
+
+## Function closeBtree
+
+This file describes the `closeBtree` function to close a B-tree structure and release associated resources.
+
+**Function Signature**
+
+```c
+RC closeBtree(BTreeHandle *tree)
+```
+
+**Purpose:** This function closes a B-tree structure and releases associated resources.
+
+**Parameters:**
+
+- `tree`: A pointer to the `BTreeHandle` structure representing the B-tree to be closed.
+
+**Return:**
+
+- `RC_OK`: Indicates successful execution of the function.
+- `RC_IM_KEY_NOT_FOUND`: Indicates that the B-tree handle is not found.
+
+**Details:**
+
+1. **Tree Handle Validation**:
+   - Check if the `tree` parameter is `NULL`.
+   - If `tree` is `NULL`, return `RC_IM_KEY_NOT_FOUND`.
+
+2. **Management Data Extraction**:
+   - Extract the pointer to the B-tree management data (`bTreeMgmt`) from the `tree`.
+
+3. **Buffer Pool Shutdown**:
+   - Call the `shutdownBufferPool` function to shut down the buffer pool associated with the B-tree management data (`bTreeMgmt`).
+   - Store the return code of `shutdownBufferPool` in the variable `rc`.
+
+4. **Resource Deallocation**:
+   - If the buffer pool shutdown is successful (`rc == RC_OK`):
+     - Free the allocated memory for the B-tree management data (`bTreeMgmt`).
+     - Free the allocated memory for the B-tree handle (`tree`).
+     - Safely handle the global variable `root`:
+       - If `root` is not `NULL`, free `root` and set it to `NULL`.
+
+5. **Return**:
+   - Return the value of `rc` to indicate the success or failure of the operation.
+
+  ---
+## Function deleteBtree
+
+This file describes the `deleteBtree` function to delete a B-tree stored in the file specified by the `idxId` parameter.
+
+**Function Signature**
+
+```c
+RC deleteBtree(char *idxId)
+```
+
+**Purpose:** This function deletes a B-tree stored in the file specified by the `idxId` parameter.
+
+**Parameters:**
+
+- `idxId`: The identifier for the B-tree stored in the file.
+
+**Return:**
+
+- `RC_OK`: Indicates successful execution of the function.
+- `RC_IM_KEY_NOT_FOUND`: Indicates that the index identifier is not found.
+
+**Details:**
+
+1. **Index Identifier Validation**:
+   - Check if the `idxId` parameter is `NULL`.
+   - If `idxId` is `NULL`, set the return code `rc` to `RC_IM_KEY_NOT_FOUND`.
+
+2. **File Deletion Operation**:
+   - Declare a function pointer `operation` to a function that takes a `char *` parameter and returns an `RC` value.
+   - Initialize `operation` to point to the `destroyPageFile` function.
+   - Call the function pointed by `operation` with the `idxId` parameter and store the return code in `rc`.
+
+3. **Return**:
+   - Return the value of `rc` to indicate the success or failure of the file deletion operation.
+---
+
+## Function getNumNodes
+
+This file describes the `getNumNodes` function to return the number of nodes present in the B+ tree associated with the given tree handle.
+
+**Function Signature**
+
+```c
+RC getNumNodes(BTreeHandle *tree, int *result)
+```
+
+**Purpose:** This function returns the number of nodes present in the B+ tree.
+
+**Parameters:**
+
+- `tree`: A pointer to the `BTreeHandle` structure representing the B+ tree.
+- `result`: A pointer to an integer where the result (number of nodes) will be stored.
+
+**Return:**
+
+- `RC_OK`: Indicates successful execution of the function.
+- `RC_IM_KEY_NOT_FOUND`: Indicates that the B-tree handle is not found.
+
+**Details:**
+
+1. **Tree Handle Validation**:
+   - Check if the `tree` parameter is `NULL`.
+   - If `tree` is `NULL`, return `RC_IM_KEY_NOT_FOUND`.
+
+2. **Result Assignment**:
+   - Assign the value of `numNodeValue` to the memory location pointed by `result`.
+
+3. **Return**:
+   - Return `RC_OK` to indicate successful execution of the function.
+---
+
+## Function getNumEntries
+
+This file describes the `getNumEntries` function to return the number of entries/records/keys present in the B+ tree associated with the given tree handle.
+
+**Function Signature**
+
+```c
+RC getNumEntries(BTreeHandle *tree, int *result)
+```
+
+**Purpose:** This function returns the number of entries/records/keys present in the B+ tree.
+
+**Parameters:**
+
+- `tree`: A pointer to the `BTreeHandle` structure representing the B+ tree.
+- `result`: A pointer to an integer where the result (number of entries) will be stored.
+
+**Return:**
+
+- `RC_OK`: Indicates successful execution of the function.
+- `RC_IM_KEY_NOT_FOUND`: Indicates that the B-tree handle is not found.
+
+**Details:**
+
+1. **Tree Handle Validation**:
+   - Check if the `tree` parameter is `NULL`.
+   - If `tree` is `NULL`, return `RC_IM_KEY_NOT_FOUND`.
+
+2. **Number of Entries Retrieval**:
+   - Extract the number of entries from the management data associated with the B+ tree.
+   - Calculate the offset of `numEntries` within the `RM_bTree_mgmtData` structure.
+   - Dereference the pointer to `mgmtData` in `tree` and add the offset to access the value of `numEntries`.
+   - Store the retrieved number of entries in the memory location pointed by `result`.
+
+3. **Return**:
+   - Return `RC_OK` to indicate successful execution of the function.
+---
+## Function getKeyType
+
+This file describes the `getKeyType` function to return the data type of the keys being stored in the B+ tree associated with the given tree handle.
+
+**Function Signature**
+
+```c
+RC getKeyType(BTreeHandle *tree, DataType *result)
+```
+
+**Purpose:** This function returns the data type of the keys being stored in the B+ tree.
+
+**Parameters:**
+
+- `tree`: A pointer to the `BTreeHandle` structure representing the B+ tree.
+- `result`: A pointer to a `DataType` variable where the result (key type) will be stored.
+
+**Return:**
+
+- `RC_OK`: Indicates successful execution of the function.
+- `RC_IM_KEY_NOT_FOUND`: Indicates that the B-tree handle or the result pointer is `NULL`.
+
+**Details:**
+
+1. **Input Parameter Validation**:
+   - Check if the `tree` parameter, the `result` pointer, or the `mgmtData` pointer in `tree` is `NULL`.
+   - If any of these pointers are `NULL`, return `RC_IM_KEY_NOT_FOUND`.
+
+2. **Key Type Retrieval**:
+   - Assign the value of `keyType` from the B+ tree handle (`tree->keyType`) to the memory location pointed by `result`.
+
+3. **Return**:
+   - If the key type is successfully retrieved (`result` is not `NULL`), return `RC_OK`.
+   - Otherwise, return `RC_IM_KEY_NOT_FOUND`.
+
+---
+## Function findKey
+
+This file describes the `findKey` function to search for a key in the B+ tree associated with the given tree handle.
+
+**Function Signature**
+
+```c
+RC findKey(BTreeHandle *tree, Value *key, RID *result)
+```
+
+**Purpose:** This function searches the B+ tree for the specified key and retrieves the corresponding Record ID (RID).
+
+**Parameters:**
+
+- `tree`: A pointer to the `BTreeHandle` structure representing the B+ tree.
+- `key`: A pointer to the `Value` structure representing the key to search for.
+- `result`: A pointer to the `RID` structure where the result (page number and slot number) will be stored.
+
+**Return:**
+
+- `RC_OK`: Indicates successful execution of the function.
+- `RC_IM_KEY_NOT_FOUND`: Indicates that the B-tree handle, the key, or the root node is `NULL`.
+
+**Details:**
+
+1. **Input Parameter Validation**:
+   - Check if the `tree`, `key`, or `root` pointer is `NULL`.
+   - If any of these pointers are `NULL`, return `RC_IM_KEY_NOT_FOUND`.
+
+2. **Leaf Node Search**:
+   - Initialize a variable `leaf` to point to the root node of the B+ tree.
+   - Initialize a variable `i` to 0 for iteration.
+   - Use a loop to traverse down the tree until reaching a leaf node or encountering a `NULL` key.
+   - Inside the loop, iterate through the keys of the current node (`leaf`) and compare them with the search key.
+   - Update the `leaf` pointer to the appropriate child node based on the comparison.
+
+3. **Key Search within Leaf**:
+   - Iterate through the keys of the leaf node to find the matching key.
+   - If the key is found, retrieve the corresponding page number and slot number from the leaf node.
+   - If the key is not found, return `RC_IM_KEY_NOT_FOUND`.
+
+4. **Result Assignment**:
+   - Assign the page number and slot number to the `result` structure.
+
+5. **Return**:
+   - Return `RC_OK` to indicate successful execution of the function.
+
+---
+
+## Function insertKey
+
+This file describes the `insertKey` function to add a new entry/record with the specified key and RID to the B+ tree.
+
+**Function Signature**
+
+```c
+RC insertKey(BTreeHandle *tree, Value *key, RID rid)
+```
+
+**Purpose:** This function inserts a new key-value pair into the B+ tree.
+
+**Parameters:**
+
+- `tree`: A pointer to the `BTreeHandle` structure representing the B+ tree.
+- `key`: A pointer to the `Value` structure representing the key to insert.
+- `rid`: The Record ID (RID) associated with the key to be inserted.
+
+**Return:**
+
+- `RC_OK`: Indicates successful execution of the function.
+- `RC_IM_KEY_NOT_FOUND`: Indicates that the B-tree handle or the key is `NULL`.
+
+**Details:**
+
+1. **Input Parameter Validation**:
+   - Check if the `tree` or `key` pointer is `NULL`.
+   - If either pointer is `NULL`, return `RC_IM_KEY_NOT_FOUND`.
+
+2. **Leaf Node Search**:
+   - Initialize variables and traverse down the tree to find the appropriate leaf node for insertion.
+
+3. **Node Splitting**:
+   - If the leaf node is full, split it into two nodes.
+   - Distribute the keys and pointers between the old and new leaf nodes.
+   - Update the parent node if necessary.
+
+4. **Insertion**:
+   - Insert the key-value pair into the leaf node.
+
+5. **Parent Node Update**:
+   - If a node split occurred, update the parent node to accommodate the new child nodes.
+
+6. **Return**:
+   - Return `RC_OK` to indicate successful insertion.
+---
+
+## Function deleteKey
+
+This file describes the `deleteKey` function to delete the entry/record with the specified key in the B+ tree.
+
+**Function Signature**
+
+```c
+RC deleteKey(BTreeHandle *tree, Value *key)
+```
+
+**Purpose:** This function deletes the entry/record with the specified key in the B+ tree.
+
+**Parameters:**
+
+- `tree`: A pointer to the `BTreeHandle` structure representing the B+ tree.
+- `key`: A pointer to the `Value` structure representing the key to be deleted.
+
+**Return:**
+
+- `RC_OK`: Indicates successful execution of the function.
+- `RC_IM_KEY_NOT_FOUND`: Indicates that the B-tree handle or the key is `NULL`.
+
+**Details:**
+
+1. **Input Parameter Validation**:
+   - Check if the `tree` or `key` pointer is `NULL`.
+   - If either pointer is `NULL`, return `RC_IM_KEY_NOT_FOUND`.
+
+2. **Leaf Node Search**:
+   - Traverse down the tree to find the appropriate leaf node containing the key to be deleted.
+
+3. **Key Deletion**:
+   - Search for the key in the leaf node.
+   - If found, delete the key and associated record from the leaf node.
+
+4. **Parent Node Update**:
+   - If necessary, update the parent node to maintain the B+ tree properties.
+
+5. **Return**:
+   - Return `RC_OK` to indicate successful deletion.
+---
+
+## Function openTreeScan
+
+This file describes the `openTreeScan` function to initialize the scan used for scanning the entries in the B+ tree in sorted key order.
+
+**Function Signature**
+
+```c
+RC openTreeScan(BTreeHandle *tree, BT_ScanHandle **handle)
+```
+
+**Purpose:** This function initializes the scan used to scan the entries in the B+ tree in sorted key order.
+
+**Parameters:**
+
+- `tree`: A pointer to the `BTreeHandle` structure representing the B+ tree.
+- `handle`: A pointer to a pointer to the `BT_ScanHandle` structure to store the scan handle.
+
+**Return:**
+
+- `RC_OK`: Indicates successful initialization of the scan.
+- `RC_IM_KEY_NOT_FOUND`: Indicates that the B-tree handle is `NULL`.
+- `RC_MALLOC_FAILED`: Indicates memory allocation failure.
+
+**Details:**
+
+1. **Input Parameter Validation**:
+   - Check if the `tree` pointer is `NULL`.
+   - If `tree` is `NULL`, return `RC_IM_KEY_NOT_FOUND`.
+
+2. **Allocate Memory**:
+   - Allocate memory for the `BT_ScanHandle` structure and initialize it to zero using `calloc`.
+   - If memory allocation fails, return `RC_MALLOC_FAILED`.
+
+3. **Initialize Scan Handle**:
+   - Set the `tree` pointer of the scan handle to the provided `tree`.
+   - Allocate memory for the `RM_BScan_mgmt` structure within the scan handle and initialize it to zero using `calloc`.
+   - If memory allocation fails, free the previously allocated memory and return `RC_MALLOC_FAILED`.
+  
+4. **Initialize Scan Management Data**:
+   - If the scan management data structure is successfully allocated:
+     - Set the current pointer (`cur`) to `NULL`.
+     - Set the index to zero.
+     - Set the total scan count to zero.
+
+5. **Return**:
+   - Return `RC_OK` to indicate successful initialization of the scan handle.
+  
+---
+## Function nextEntry
+
+This file describes the `nextEntry` function to traverse the entries in the B+ Tree.
+
+**Function Signature**
+
+```c
+RC nextEntry(BT_ScanHandle *handle, RID *result)
+```
+
+**Purpose:** This function is used to traverse the entries in the B+ Tree.
+
+**Parameters:**
+
+- `handle`: A pointer to the `BT_ScanHandle` structure representing the scan handle.
+- `result`: A pointer to the `RID` structure to store the result.
+
+**Return:**
+
+- `RC_OK`: Indicates successful traversal of the next entry.
+- `RC_IM_KEY_NOT_FOUND`: Indicates that the scan handle is `NULL`.
+- `RC_IM_NO_MORE_ENTRIES`: Indicates that there are no more entries to traverse.
+
+**Details:**
+
+1. **Input Parameter Validation**:
+   - Check if the `handle` pointer is `NULL`.
+   - If `handle` is `NULL`, return `RC_IM_KEY_NOT_FOUND`.
+
+2. **Scan Management Data Retrieval**:
+   - Retrieve the scan management data structure from the scan handle.
+
+3. **Get Total Number of Entries**:
+   - Call the `getNumEntries` function to get the total number of entries in the B+ Tree.
+   - If the return code is not `RC_OK`, return the same error code.
+
+4. **Check for No More Entries**:
+   - If the total number of scanned entries exceeds or equals the total number of entries in the B+ Tree, return `RC_IM_NO_MORE_ENTRIES`.
+
+5. **Traverse to Leaf Node**:
+   - If the total scan count is zero, traverse to the leaf node containing the first entry.
+   
+6. **Update Scan Management Data**:
+   - If the current index in the leaf node exceeds the number of keys, move to the next leaf node.
+   
+7. **Retrieve RID**:
+   - Allocate memory for the `RID` structure.
+   - Retrieve the RID from the current leaf node.
+   
+8. **Update Scan Management and Result**:
+   - Update the scan management data with the incremented total scan count.
+   - Update the scan handle's management data.
+   - Store the result in the provided `RID` structure.
+
+9. **Return**:
+   - Return `RC_OK` to indicate successful traversal of the next entry.
+ 
+---
+
+## Function closeTreeScan
+
+This file describes the `closeTreeScan` function to close the scan mechanism and free up resources.
+
+**Function Signature**
+
+```c
+RC closeTreeScan(BT_ScanHandle *handle)
+```
+
+**Purpose:** This function closes the scan mechanism and frees up resources.
+
+**Parameters:**
+
+- `handle`: A pointer to the `BT_ScanHandle` structure representing the scan handle to be closed.
+
+**Return:**
+
+- `RC_OK`: Indicates successful closure of the scan mechanism.
+
+**Details:**
+
+1. **Input Parameter Validation**:
+   - Check if the `handle` pointer is `NULL`.
+   - If `handle` is `NULL`, return `RC_OK` indicating successful closure.
+
+2. **Release Resources**:
+   - Set the `mgmtData` pointer of the scan handle to `NULL` to release any associated resources.
+   - Free the memory allocated for the scan handle.
+
+3. **Return**:
+   - Return `RC_OK` to indicate successful closure of the scan mechanism.
+
+---
+## Function recDFS
+
+This file describes the `recDFS` function to perform a recursive depth-first search (DFS) traversal of the B-tree nodes.
+
+**Function Signature**
+
+```c
+int recDFS(RM_BtreeNode *bTreeNode)
+```
+
+**Purpose:** This function performs a recursive depth-first search (DFS) traversal of the B-tree nodes.
+
+**Parameters:**
+
+- `bTreeNode`: A pointer to the `RM_BtreeNode` representing the current node in the traversal.
+
+**Return:**
+
+- `int`: Returns 0 to indicate successful traversal.
+
+**Details:**
+
+1. **Node Validation**:
+   - Check if the `bTreeNode` pointer is `NULL`.
+   - If `bTreeNode` is `NULL`, return 0 to terminate the traversal.
+
+2. **Update Node Position**:
+   - Update the position of the current node (`bTreeNode->pos`) to `globalPos + 1`.
+
+3. **Depth-First Search (DFS) Traversal**:
+   - If the current node is not a leaf node, recursively traverse its child nodes:
+     - Iterate through each child node and recursively call `recDFS` on each child node.
+
+4. **Return**:
+   - Return 0 to indicate successful traversal.
+---
+
+## Function walkPath
+
+This file describes the `walkPath` function to traverse the path of the B-tree nodes and construct a string representation of the keys.
+
+**Function Signature**
+
+```c
+int walkPath(RM_BtreeNode *bTreeNode, char *result)
+```
+
+**Purpose:** This function traverses the path of the B-tree nodes and constructs a string representation of the keys.
+
+**Parameters:**
+
+- `bTreeNode`: A pointer to the `RM_BtreeNode` representing the current node in the traversal.
+- `result`: A pointer to a character array (`char *`) where the string representation of the keys will be stored.
+
+**Return:**
+
+- `int`: Returns 0 to indicate successful traversal.
+
+**Details:**
+
+1. **Memory Allocation**:
+   - Allocate memory for the `line` character array with a size of 100 characters.
+
+2. **Leaf Node Handling**:
+   - If the current node is a leaf node and not `NULL`, iterate through its keys:
+     - Serialize each key and concatenate it to the `line`.
+     - Free the memory allocated for the serialized value.
+     - If the last pointer of the leaf node is `NULL`, append '-' to indicate the end of the line.
+
+3. **Non-Leaf Node Handling**:
+   - If the current node is not a leaf node and not `NULL`, iterate through its keys:
+     - Serialize each key and concatenate it to the `line`.
+     - If the last child pointer of the node is `NULL`, append '-' to indicate the end of the line.
+
+4. **Concatenate Line to Result**:
+   - Concatenate the `line` to the `result` string.
+
+5. **Recursive Traversal**:
+   - If the current node is not a leaf node and not `NULL`, recursively call `walkPath` for each child node.
+
+6. **Return**:
+   - Return 0 to indicate successful traversal.
+---
+
+## Function printTree
+
+This file describes the `printTree` function to print the entire B-tree structure.
+
+**Function Signature**
+
+```c
+char *printTree(BTreeHandle *tree)
+```
+
+**Purpose:** This function prints the entire B-tree structure.
+
+**Parameters:**
+
+- `tree`: A pointer to the `BTreeHandle` structure representing the B-tree.
+
+**Return:**
+
+- `char *`: A pointer to a character array containing the string representation of the B-tree structure.
+
+**Details:**
+
+1. **Root Node Check**:
+   - Check if the `root` node of the B-tree is `NULL`. If so, return `NULL`.
+
+2. **Recursive Depth-First Search (DFS)**:
+   - Perform a depth-first search traversal of the B-tree starting from the root node.
+   - Invoke the `recDFS` function to calculate the length of the traversal path and store it in `length`.
+
+3. **Allocate Memory**:
+   - Allocate memory for the `result` character array with a size of `length` multiplied by 1000 characters.
+
+4. **Walk Path and Build String Representation**:
+   - Invoke the `walkPath` function to traverse the B-tree and construct the string representation of its keys.
+   - Store the result in the `result` character array.
+
+5. **Return Result**:
+   - Return the `result` character array containing the string representation of the B-tree structure.
