@@ -181,7 +181,7 @@ extern RC openTable(RM_TableData *rel, char *name)
     SM_PageHandle pageHandle = (SM_PageHandle *)recController->bmPageHandle.data;
 
     // Get the total number of tuples from the page file
-    recController->totalRecordCount = (int *)*pageHandle;
+    recController->totalRecordCount = *pageHandle;
     pageHandle += sz;
 
     // Get the free page number from the page file
@@ -356,7 +356,7 @@ extern RC deleteRecord(RM_TableData *rel, RID id)
         }
 
         recController->freePagesNum = id.page;
-        char *size = (id.slot * recordSize);
+        char *size = (char *)(id.slot * recordSize);
         char *data = recController->bmPageHandle.data;
         data = data + (int)size;
         // Deleted Record Demarkation using - [TOMBSTONE] ☠️
@@ -519,8 +519,8 @@ extern RC next(RM_ScanHandle *scan, Record *record)
                 int offset = scanController->recID.slot * recSize;
                 pageHandleData = pageHandleData + offset;
 
-                record->id.page = (RM_RecordController *)scanController->recID.page;
-                record->id.slot = (RM_RecordController *)scanController->recID.slot;
+                record->id.page = scanController->recID.page;
+                record->id.slot = scanController->recID.slot;
 
                 char *dataPtr = record->data;
 
@@ -615,10 +615,7 @@ extern Schema *createSchema(int numAttr, char **attrNames, DataType *dataTypes, 
             // returning schema after updating all attributes
             return currSchema;
         }
-        else
-        {
-            return RC_SCHEMA_CREATION_FAILURE;
-        }
+        
     }
 }
 

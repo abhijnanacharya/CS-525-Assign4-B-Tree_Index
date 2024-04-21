@@ -36,34 +36,6 @@ typedef struct BM_PageHandle
     char *data;
 } BM_PageHandle;
 
-// Page Frame Reference to store value
-typedef struct Frame
-{
-    SM_PageHandle pageData; // Data of page
-    PageNumber pageNum;     // Each Page Number in Page Frame
-    int dirtyFlag;          // determines if page is Dirty
-    int fixCount;           // gives count of current users accessing the page
-    int hitCount;           // pointer to the previous frame in the list
-} Frame;
-
-typedef struct Statlist
-{
-    Frame *fpt;            // frame pointer
-    struct Statlist *next; // pointer to the next node in the status list
-} Statlist;
-
-typedef struct Buffer
-{                           // buffer pool structure
-    int numFrames;          // number of frames in the frame list
-    int readCount;          // count of read operations
-    int writeCount;         // count of write operations
-    void *stratData;        // strategy-specific data
-    Frame *head;            // pointer to the first frame in the frame list
-    Frame *tail;            // pointer to the last frame in the frame list
-    Frame *pointer;         // pointer for special purposes; initialized as the head
-    Statlist *statListHead; // pointer to the head of the status list
-} Buffer;
-
 // convenience macros
 #define MAKE_POOL() \
     ((BM_BufferPool *)malloc(sizeof(BM_BufferPool)))

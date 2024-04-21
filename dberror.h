@@ -51,6 +51,9 @@ typedef int RC;
 #define RC_RECORD_SIZE_FATAL_ERR 902
 #define RC_SCHEMA_CREATION_FAILURE 903
 
+#define RC_MEMORY_ALLOCATION_ERROR 950
+#define RC_MALLOC_FAILED 951
+#define RC_IM_MEMORY_ERROR 952
 /* holder for error messages */
 extern char *RC_message;
 

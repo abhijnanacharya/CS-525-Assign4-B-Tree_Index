@@ -3,6 +3,31 @@
 
 #include "dberror.h"
 #include "tables.h"
+#include "buffer_mgr.h"
+typedef struct RM_BtreeNode
+{
+  void **ptrs;
+  Value *keys;
+  struct RM_BtreeNode *parPtr;
+  int KeyCounts;
+  int pos;
+  bool isLeaf;
+} RM_BtreeNode;
+
+typedef struct RM_bTree_mgmtData
+{
+  int maxKeyNum;
+  int numEntries;
+  BM_BufferPool *bp;
+} RM_bTree_mgmtData;
+
+typedef struct RM_BScan_mgmt
+{
+  int totalScan;
+  int index;
+  RM_BtreeNode *cur;
+} RM_BScan_mgmt;
+
 
 // structure for accessing btrees
 typedef struct BTreeHandle {

@@ -4,8 +4,8 @@ CC= clang
 .PHONY: all
 all: test_assign1
 
-test_assign1: test_assign3_1.c storage_mgr.c dberror.c buffer_mgr.c buffer_mgr_stat.c buffer_mgr_helper.c expr.c record_mgr.c rm_serializer.c btree_mgr.c
-	$(CC) $(CFLAGS) -o test_assign1 test_assign3_1.c storage_mgr.c dberror.c buffer_mgr.c buffer_mgr_stat.c buffer_mgr_helper.c expr.c record_mgr.c rm_serializer.c btree_mgr.c
+test_assign1: test_assign4_1.c storage_mgr.c dberror.c buffer_mgr.c buffer_mgr_stat.c btree_mgr_helper.c expr.c record_mgr.c rm_serializer.c btree_mgr.c
+	$(CC) $(CFLAGS) -o test_assign1 test_assign4_1.c storage_mgr.c dberror.c buffer_mgr.c buffer_mgr_stat.c btree_mgr_helper.c expr.c record_mgr.c rm_serializer.c btree_mgr.c
 
 .PHONY: clean
 clean:
