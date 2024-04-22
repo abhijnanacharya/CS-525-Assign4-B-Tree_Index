@@ -66,7 +66,7 @@ RC insertParent(RM_BtreeNode *left, RM_BtreeNode *right, Value key)
       NewRoot->ptrs[0] = left, left->parPtr = NewRoot;
       NewRoot->ptrs[1] = right, right->parPtr = NewRoot;
       root = NewRoot;
-      printf("Allocation Success! \n");
+      printf("***************** SUCCESSFULLY ALLOCATED MEMORY! ***************\n");
       return RC_OK;
     }
     else
@@ -269,7 +269,7 @@ RC deleteNode(RM_BtreeNode *bTreeNode, int index)
   }
 
   // Not root
-  RM_BtreeNode *parentNode = (bTreeNode->parPtr!=NULL)?bTreeNode->parPtr:NULL;
+  RM_BtreeNode *parentNode = (bTreeNode->parPtr != NULL) ? bTreeNode->parPtr : NULL;
   position = 0;
 
   while (position < parentNode->KeyCounts && parentNode->ptrs[position] != bTreeNode && root)
@@ -369,7 +369,6 @@ RC deleteNode(RM_BtreeNode *bTreeNode, int index)
     {
       brotherNumKeys = brother->KeyCounts--;
       bTreeNode->keys[0] = brother->keys[brotherNumKeys], parentNode->keys[position - 1] = bTreeNode->keys[0];
-
     }
     else
     {
@@ -399,14 +398,12 @@ RC deleteNode(RM_BtreeNode *bTreeNode, int index)
     {
       parentNode->keys[0] = brother->keys[1];
       bTreeNode->ptrs[NumKeys] = brother->ptrs[0], bTreeNode->keys[NumKeys] = brother->keys[0];
-
     }
     // Shift to left by 1
     for (i = 0; i < broKeyC && broKeyC && bTreeNode; i++)
     {
       int nxt = i + 1;
       brother->keys[i] = brother->keys[nxt], globalPos = brother->KeyCounts, brother->ptrs[i] = brother->ptrs[nxt];
-
     }
 
     brother->keys[brother->KeyCounts] = empty;
@@ -635,7 +632,8 @@ RC getKeyType(BTreeHandle *tree, DataType *result)
   }
 
   *result = tree->keyType;
-  if(*result){
+  if (*result)
+  {
     return RC_OK;
   }
 
@@ -656,9 +654,9 @@ RC findKey(BTreeHandle *tree, Value *key, RID *result)
 
   RM_BtreeNode *leaf = root;
   int i = 0;
-  int_fast32_t RESET=0;
+  int_fast32_t RESET = 0;
   // Find leaf
-  while (tree != NULL && !leaf->isLeaf &&key)
+  while (tree != NULL && !leaf->isLeaf && key)
   {
     while (i < leaf->KeyCounts && tree != NULL && cmpStr(serializeValue(&leaf->keys[i]), serializeValue(key)))
     {
@@ -1081,12 +1079,28 @@ int walkPath(RM_BtreeNode *bTreeNode, char *result)
 {
 
   char *line = (char *)malloc(100 * sizeof(char));
-
+  printf(line, "(%d)[", bTreeNode->pos);
   if (bTreeNode->isLeaf && bTreeNode != NULL)
   {
     // Leaf Node
     for (int i = 0; i < bTreeNode->KeyCounts && bTreeNode != NULL; i++)
     {
+      // RECORD ID
+
+      size_t lenPos = strlen(line);
+
+      // Extract the page and slot values from the bTreeNode->ptrs[i] pointer
+      RID *ridPtr = (RID *)bTreeNode->ptrs[i];
+      int pageValue = ridPtr->page;
+      int slotValue = ridPtr->slot;
+
+      // Create a format string for the sprintf function
+      char formatString[10]; // Make sure this size is large enough for your format
+      sprintf(formatString, "%%d.%%d,");
+
+      // Use sprintf to format the values into the `line` buffer
+      sprintf(line + lenPos, formatString, pageValue, slotValue);
+
       sv = serializeValue(&bTreeNode->keys[i]);
       strcat(line, sv);
       free(sv);
@@ -1096,7 +1110,25 @@ int walkPath(RM_BtreeNode *bTreeNode, char *result)
 
     if (bTreeNode->ptrs[sizeofNodes - 1] == NULL)
     {
-      line[strlen(line) - 1] = '-'; // EOL
+      // sprintf(line + strlen(line), "%d", ((RM_BtreeNode *)bTreeNode->ptrs[sizeofNodes - 1])->pos);
+      // // line[strlen(line) - 1] = '-'; // EOL
+      // Calculate the position where you want to start writing in the `line` buffer
+size_t lenPos = strlen(line);
+
+// Calculate the index for accessing bTreeNode->ptrs
+size_t index = sizeofNodes - 1;
+
+// Extract the pos value from the bTreeNode->ptrs[index] pointer
+RM_BtreeNode *nodePtr = (RM_BtreeNode *)bTreeNode->ptrs[index];
+int posValue = nodePtr->pos;
+
+// Use sprintf to format the posValue into the `line` buffer
+sprintf(line + lenPos, "%d", posValue);
+    }
+    else
+    {
+      line[strlen(line) - 1] = '0'; // EOL
+      // sprintf(line + strlen(line), "%d", ((RM_BtreeNode *)bTreeNode->ptrs[sizeofNodes - 1])->pos);
     }
   }
   else
@@ -1111,9 +1143,16 @@ int walkPath(RM_BtreeNode *bTreeNode, char *result)
       sv = ((void *)0);
     }
 
-    if (((RM_BtreeNode *)bTreeNode->ptrs[bTreeNode->KeyCounts]) == NULL)
+    if (((RM_BtreeNode *)bTreeNode->ptrs[bTreeNode->KeyCounts]) != ((void *)0))
     {
-      line[strlen(line) - 1] = '-';
+      size_t posStr = strlen(line);
+      sprintf(line + posStr, "%d", ((RM_BtreeNode *)bTreeNode->ptrs[bTreeNode->KeyCounts])->pos);
+      // line[strlen(line) - 1] = '-';
+    }
+    else
+    {
+      int pos = strlen(line) - 1;
+      line[pos] = '-';
     }
   }
 
@@ -1137,7 +1176,6 @@ char *printTree(BTreeHandle *tree)
     return NULL;
   globalPos;
   int lenth = recDFS(root);
-  lenth = 1000;
   char *result = malloc(lenth * sizeof(char));
   walkPath(root, result);
   return result;
